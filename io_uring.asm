@@ -321,6 +321,7 @@ rings_reap:
   xor rax,rax
   mov r10d,ebx    ; head
 
+  mov r12,.ready
   test r10d,r9d
   jz .wake_up
 
@@ -332,6 +333,11 @@ rings_reap:
   je .done
 
   .reap:
+    mov r12,.after_wake_up
+    test ebx,r9d
+    jz .wake_up
+
+  .after_wake_up:
     mov r10d,ebx    ; head
     mov r12,[rdi+72]; tail ptr
     cmp r10d,[r12]  ; tail u32 vs head
@@ -349,6 +355,10 @@ rings_reap:
     inc rax         ; n
     inc ebx         ; head
     add rsi,16
+
+    mov r12,[rdi+64]
+    mov [r12],ebx
+
     loop .reap
 
 .done:
@@ -369,7 +379,6 @@ rings_reap:
   push rsi
   push rdx
   push r10
-  sub rsp,8
 
   mov rax,426
   mov edi,[rdi+7*8]
@@ -379,7 +388,6 @@ rings_reap:
   xor r8,r8
   syscall
 
-  add rsp,8
   pop r10
   pop rdx
   pop rsi
@@ -387,4 +395,4 @@ rings_reap:
   pop r9
   pop rbx
   pop rax
-  jmp .ready
+  jmp r12

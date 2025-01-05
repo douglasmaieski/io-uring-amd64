@@ -310,7 +310,6 @@ rings_reap:
   ; RSI -> io_uring_cqe
   ; RDX -> max_count
   push rbx
-  push rbp
   push r12
 
 .setup:
@@ -319,10 +318,9 @@ rings_reap:
   mov ebx,[rbx]     ; head u32
   mov r9d,[rdi+124] ; mask
   xor rax,rax
-  mov r10d,ebx    ; head
 
   mov r12,.ready
-  test r10d,r9d
+  test ebx,r9d
   jz .wake_up
 
 .ready:
@@ -362,11 +360,7 @@ rings_reap:
     loop .reap
 
 .done:
-  mov r12,[rdi+64]
-  mov [r12],ebx
-
   pop r12
-  pop rbp
   pop rbx
 
   ret
@@ -379,6 +373,7 @@ rings_reap:
   push rsi
   push rdx
   push r10
+  push rcx
 
   mov rax,426
   mov edi,[rdi+7*8]
@@ -388,6 +383,7 @@ rings_reap:
   xor r8,r8
   syscall
 
+  pop rcx
   pop r10
   pop rdx
   pop rsi
